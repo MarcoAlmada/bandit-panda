@@ -1,0 +1,3 @@
+from EpsilonGreedy import EpsilonGreedy
+from Softmax import Softmax
+from UCB1 import UCB1
