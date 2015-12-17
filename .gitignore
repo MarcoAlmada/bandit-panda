@@ -58,6 +58,8 @@ target/
 
 # Emacs temporary files
 *.pyc~
+*.py~
+.gitignore~
 
 # Data
 data/
