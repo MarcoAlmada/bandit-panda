@@ -1,4 +1,4 @@
-from math import log, sqrt
+from math import log
 from pandas import DataFrame
 
 from BaseBanditAlgorithm import BaseBanditAlgorithm
@@ -38,32 +38,19 @@ class UCB1(BaseBanditAlgorithm):
 
         total_count = self.arms['Iteration'].sum()
 
-        ucb_values = self.arms['Reward'] + self.arms['Iteration'].map(
-                lambda x: sqrt(2 * log(total_count)/float(x))
-        )
+        ucb_values = 2 * log(total_count)/self.arms['Iteration']
+        ucb_values **= 0.5
+        ucb_values += self.arms['Reward']
 
         return ucb_values.idxmax()
 
     def update(self, chosen_arm, reward):
 
-        n = self.update_count(chosen_arm)
-        self.update_mean(chosen_arm, reward, n)
+        arm = int(chosen_arm)
+        n = self.arms.ix[arm, 'Iteration'] + 1
+
+        self.arms.ix[arm, 'Iteration'] = n
+        self.arms.ix[arm, 'Reward'] *= (n-1)/float(n)
+        self.arms.ix[arm, 'Reward'] += reward/float(n)
         return
 
-    def update_count(self, chosen_arm):
-
-        chosen_arm = int(chosen_arm)
-
-        self.arms.ix[chosen_arm, 'Iteration'] += 1
-        return self.arms.ix[chosen_arm, 'Iteration']
-
-    def update_mean(self, chosen_arm, reward, n=None):
-
-        chosen_arm = int(chosen_arm)
-
-        if n == None:
-            n = self.arms.ix[chosen_arm, 'Iteration']
-
-        self.arms.ix[chosen_arm, 'Reward'] *= (n-1)/float(n)
-        self.arms.ix[chosen_arm, 'Reward'] += reward/float(n)
-        return

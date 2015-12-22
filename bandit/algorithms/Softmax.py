@@ -56,26 +56,12 @@ class Softmax(BaseBanditAlgorithm):
 
     def update(self, chosen_arm, reward):
 
-        n = self.update_count(chosen_arm)
-        self.update_mean(chosen_arm, reward, n)
-        return
+        arm = int(chosen_arm)
+        n = self.arms.ix[arm, 'Iteration'] + 1
 
-    def update_count(self, chosen_arm):
-
-        chosen_arm = int(chosen_arm)
-
-        self.arms.ix[chosen_arm, 'Iteration'] += 1
-        return self.arms.ix[chosen_arm, 'Iteration']
-
-    def update_mean(self, chosen_arm, reward, n=None):
-
-        chosen_arm = int(chosen_arm)
-
-        if n == None:
-            n = self.arms.ix[chosen_arm, 'Iteration']
-
-        self.arms.ix[chosen_arm, 'Reward'] *= (n-1)/float(n)
-        self.arms.ix[chosen_arm, 'Reward'] += reward/float(n)
+        self.arms.ix[arm, 'Iteration'] = n
+        self.arms.ix[arm, 'Reward'] *= (n-1)/float(n)
+        self.arms.ix[arm, 'Reward'] += reward/float(n)
         return
 
     def update_temperature(self):

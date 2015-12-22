@@ -1,10 +1,11 @@
 import pandas as pd
 
-from bandit.arms import BernoulliArm
-from bandit.algorithms import UCB1, Softmax, EpsilonGreedy
+from bandit.arms import BernoulliArm, LogNormalArm, GaussianArm
+from bandit.algorithms import UCB1, UCB1Normal, Softmax, EpsilonGreedy
 
 
 def create_line(line, algo, arms):
+
     """
     Given an integer, a Bandit Algorithm, and a list of arms, chooses an arm and gets its reward.
 
@@ -16,6 +17,7 @@ def create_line(line, algo, arms):
     Output:
     (int, int, float) -- (line index, chosen arm, reward drawn from the arm).
     """
+
     arm = algo.select_arm()
     reward = arms[arm].draw()
     algo.update(arm, reward)
@@ -70,15 +72,16 @@ def test_algorithm(algo, arms, num_sims=1, horizon=1000):
 
 if __name__ == "__main__":
 
-    # Hardcoded values, should be made more flexible later on
-    probs = [0.10, 0.125, 0.105]
-    arms = map(lambda p: BernoulliArm(p), probs)
-    n_sims = 10
-    n_iter = 1000
+    # Normal Arms
+    params = [(100, 10), (110, 10), (105, 10)]
+    arms = map(lambda p: GaussianArm(p[0], p[1]), params)
 
-    algo = EpsilonGreedy()
-    algo.initialize(len(probs))
+    n_sims = 10
+    n_iter = 10000
+
+    algo = UCB1Normal()
+    algo.initialize(len(arms))
 
     sim = test_algorithm(algo, arms, n_sims, n_iter)
 
-    sim.to_csv('data/simulation_test.csv', index=False)
+    sim.to_csv('data/normal_ucb1_simulation_test.csv', index=False)
