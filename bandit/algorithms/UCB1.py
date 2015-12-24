@@ -32,9 +32,8 @@ class UCB1(BaseBanditAlgorithm):
 
     def select_arm(self):
 
-        for arm in self.arms.index:
-            if self.arms.ix[arm, 'Iteration'] == 0:
-                return arm
+        if self.arms['Iteration'].min() == 0:
+            return self.arms['Iteration'].idxmin()
 
         total_count = self.arms['Iteration'].sum()
 

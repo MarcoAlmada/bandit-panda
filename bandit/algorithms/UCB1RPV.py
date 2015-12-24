@@ -4,13 +4,17 @@ from pandas import DataFrame
 from BaseBanditAlgorithm import BaseBanditAlgorithm
 
 
-class UCB1Normal(BaseBanditAlgorithm):
+class UCB1RPV(BaseBanditAlgorithm):
 
     """
-    UCB1-Normal algorithm, used for rewards with Gaussian support.
+    A UCB1-Normal variant that accounts for a two-step purchasing process.
+
+    The arm selection criteria are the same used for UCB1-Normal, but with
+    an additional condition: each arm must yield at least one non-zero reward
+    before the algorithm starts the maximization phase for selection criteria.
     """
 
-    def __init__(self, counts=[], values=[], sumsquares=[]):
+    def __init__(self, counts=[], values=[], nonzero=[], sumsquares=[]):
 
         """
         Algorithm requires no control parameters.
@@ -23,6 +27,7 @@ class UCB1Normal(BaseBanditAlgorithm):
         self.arms = DataFrame({
             'Iteration':counts, 
             'Reward':values,
+            'Nonzero':nonzero,
             'Sum-of-squares':sumsquares
         })
         self.arms.index.name = 'Arm'
@@ -34,6 +39,7 @@ class UCB1Normal(BaseBanditAlgorithm):
             {
                 'Iteration':[0], 
                 'Reward':[0.0],
+                'Nonzero': [0],
                 'Sum-of-squares':[0.0]
             }, 
             range(n_arms)
@@ -44,9 +50,14 @@ class UCB1Normal(BaseBanditAlgorithm):
     def select_arm(self):
 
         total_count = self.arms['Iteration'].sum()
+        total_conversions = self.arms['Nonzero'].sum()
 
-        if self.arms['Iteration'].min() <= 8 * log(total_count + 1):
-            return self.arms['Iteration'].idxmin()
+        arm = self.arms['Iteration'].idxmin()
+
+        if self.arms.ix[arm, 'Iteration'] <= 8 * log(total_count + 1):
+            return arm
+        elif self.arms.ix[arm, 'Nonzero'] == 0:
+            return arm
 
         sq_diff = self.arms['Sum-of-squares'] - self.arms['Iteration'] * self.arms['Reward'] ** 2
         sq_diff = sq_diff/(self.arms['Iteration'] - 1)
@@ -63,6 +74,9 @@ class UCB1Normal(BaseBanditAlgorithm):
 
         arm = int(chosen_arm)
         n = self.arms.ix[arm, 'Iteration'] + 1
+
+        if reward != 0:
+            self.arms.ix[arm, 'Nonzero'] += 1
 
         self.arms.ix[arm, 'Iteration'] = n
         self.arms.ix[arm, 'Reward'] *= (n-1)/float(n)

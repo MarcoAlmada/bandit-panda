@@ -27,11 +27,40 @@ of the chosen arm on a given run and the reward from pulling that arm, a `select
 with no parameters which returns the chosen arm in a given pull, and an `initialize` method
 which sets initial values for the counts and average rewards for each arm.
 
+# Currently Implemented
+
+## Arms
+
+* `BernoulliArm`: rewards are drawn from a Bernoulli distribution with probability parameter `p`.
+
+* `NormalArm`: rewards are drawn from a Normal distribution with parameters `mean` and `sigma`.
+
+* `LogNormalArm`: rewards are drawn from a Log-Normal distribution, where the underlying Gaussian
+is defined by parameters `mean` and `sigma`.
+
+* `RPVArm`: a crude model of customer purchase behaviour: rewards depend on a Bernoulli distribution
+with parameter `p` which models the probability of a customer making a purchase and on a Normal
+distribution with parameters `mean` and `sigma` that describe their average ticket.
+
+## Algorithms
+
+* epsilon-greedy: chooses randomly from all arms based on a parameter, otherwise takes the arm that
+is the current best performer.
+
+* Softmax: exploration is done in a random fashion, controlled by a temperature parameter.
+In the annealing mode, the temperature varies with time.
+
+* UCB1: Algorithm usable for reward distributions with support on [0,1], choosing arms based on
+a maximizing function instead of picking them at random according to parameters.
+
+* UCB1-Normal: UCB1 variant for the case in which the reward functions are Gaussian.
+
+* UCB1-RPV: a variant of UCB1-Normal which ensures that each arm will have at least one draw with
+a non-null reward, giving a fairer trial to low-probability arms.
+
 # TO DO
 
 * Write a decent and useful README
-
-* Add other examples of arms
 
 * Improve algorithm performance
 
